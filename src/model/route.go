@@ -10,4 +10,10 @@ type Point struct {
 	AccumulatedDistance float64
 	Elevation           float64
 	ElevationChange     float64
+	Coordinates         Coord
+}
+
+type Coord struct {
+	Lat float64
+	Lon float64
 }
