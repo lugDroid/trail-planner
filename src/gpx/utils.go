@@ -14,3 +14,9 @@ func check(e error) {
 func degToRad(deg float64) float64 {
 	return deg * math.Pi / 180
 }
+
+func toFixed(num float64, precision int) float64 {
+	output := math.Pow(10, float64(precision))
+
+	return float64(math.Round(num*output)) / output
+}
