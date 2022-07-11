@@ -32,29 +32,10 @@ func ParseData(gpxData model.Gpx) model.Route {
 	routeData.Name = gpxData.Rte.Name
 
 	// first pass will add individual points data
-	for _, p := range gpxData.Rte.Rtept {
-		var rp model.Point
-
-		eleValue, err := strconv.ParseFloat(p.Ele, 32)
-		if err != nil {
-			fmt.Println("Error while parsing point elevation: ", err)
-		}
-
-		rp.Elevation = eleValue
-
-		latValue, err := strconv.ParseFloat(p.Lat, 32)
-		if err != nil {
-			fmt.Println("Error while parsing point latitude: ", err)
-		}
-		rp.Coordinates.Lat = latValue
-
-		lonValue, err := strconv.ParseFloat(p.Lon, 32)
-		if err != nil {
-			fmt.Println("Error while parsing point latitude: ", err)
-		}
-		rp.Coordinates.Lon = lonValue
-
-		routeData.Points = append(routeData.Points, rp)
+	if len(gpxData.Rte.Rtept) > 0 {
+		routeData.Points = extractPointData(gpxData.Rte.Rtept)
+	} else {
+		routeData.Points = extractPointData(gpxData.Trk.Trkseg.Trkpt)
 	}
 
 	// second pass calculates data between points
@@ -81,6 +62,37 @@ func ParseData(gpxData model.Gpx) model.Route {
 	}
 
 	return routeData
+}
+
+func extractPointData(gpxPoints []model.GpxPoint) []model.Point {
+	var points []model.Point
+
+	for _, p := range gpxPoints {
+		var rp model.Point
+
+		eleValue, err := strconv.ParseFloat(p.Ele, 32)
+		if err != nil {
+			fmt.Println("Error while parsing point elevation: ", err)
+		}
+
+		rp.Elevation = eleValue
+
+		latValue, err := strconv.ParseFloat(p.Lat, 32)
+		if err != nil {
+			fmt.Println("Error while parsing point latitude: ", err)
+		}
+		rp.Coordinates.Lat = latValue
+
+		lonValue, err := strconv.ParseFloat(p.Lon, 32)
+		if err != nil {
+			fmt.Println("Error while parsing point latitude: ", err)
+		}
+		rp.Coordinates.Lon = lonValue
+
+		points = append(points, rp)
+	}
+
+	return points
 }
 
 func calculateDistance(lat1, lon1, lat2, lon2 float64) float64 {
