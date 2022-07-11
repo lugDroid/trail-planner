@@ -10,6 +10,8 @@ type Point struct {
 	AccumulatedDistance float64
 	Elevation           float64
 	ElevationChange     float64
+	AccumulatedAscent   float64
+	AccumulatedDescent  float64
 	Coordinates         Coord
 }
 

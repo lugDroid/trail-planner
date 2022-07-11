@@ -56,6 +56,13 @@ func ParseData(gpxData model.Gpx) model.Route {
 		flatDistance := calculateDistance(currentPoint.Coordinates.Lat, currentPoint.Coordinates.Lon, prevPoint.Coordinates.Lat, prevPoint.Coordinates.Lon)
 		currentPoint.DistanceToPrev = fix3dDistance(flatDistance, currentPoint.ElevationChange)
 		currentPoint.AccumulatedDistance = prevPoint.AccumulatedDistance + currentPoint.DistanceToPrev
+		if currentPoint.ElevationChange > 0 {
+			currentPoint.AccumulatedAscent = prevPoint.AccumulatedAscent + currentPoint.ElevationChange
+			currentPoint.AccumulatedDescent = prevPoint.AccumulatedDescent
+		} else {
+			currentPoint.AccumulatedAscent = prevPoint.AccumulatedAscent
+			currentPoint.AccumulatedDescent = prevPoint.AccumulatedDescent + currentPoint.ElevationChange
+		}
 
 		routeData.Points[i] = currentPoint
 		routeData.Points[i-1] = prevPoint

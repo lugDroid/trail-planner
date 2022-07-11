@@ -13,7 +13,7 @@ func main() {
 	fmt.Println("Number of points: ", len(routeData.Points))
 
 	for _, rp := range routeData.Points {
-		fmt.Printf("Elevation: %7.2fm - Change: %+6.2fm \t Acc. Distance: %7.2fkm \t Distance to Prev.: %8.3fkm", rp.Elevation, rp.ElevationChange, rp.AccumulatedDistance, rp.DistanceToPrev)
+		fmt.Printf("Elevation: %7.2fm\t Change: %+6.2fm\t Acc.Ascent: %+6.2fm\t Acc.Descent: %+6.2fm\t Acc. Distance: %7.2fkm\t Distance to Prev.: %8.3fkm", rp.Elevation, rp.ElevationChange, rp.AccumulatedAscent, rp.AccumulatedDescent, rp.AccumulatedDistance, rp.DistanceToPrev)
 		fmt.Println()
 	}
 
