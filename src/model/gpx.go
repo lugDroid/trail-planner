@@ -10,7 +10,21 @@ type Gpx struct {
 	Version        string   `xml:"version,attr"`
 	Xsi            string   `xml:"xsi,attr"`
 	SchemaLocation string   `xml:"schemaLocation,attr"`
-	Rte            struct {
+	Trk            struct {
+		Text   string `xml:",chardata"`
+		Name   string `xml:"name"`
+		Trkseg struct {
+			Text  string `xml:",chardata"`
+			Trkpt []struct {
+				Text string `xml:",chardata"`
+				Lat  string `xml:"lat,attr"`
+				Lon  string `xml:"lon,attr"`
+				Ele  string `xml:"ele"`
+				Time string `xml:"time"`
+			} `xml:"trkpt"`
+		} `xml:"trkseg"`
+	} `xml:"trk"`
+	Rte struct {
 		Text       string `xml:",chardata"`
 		Name       string `xml:"name"`
 		Desc       string `xml:"desc"`
