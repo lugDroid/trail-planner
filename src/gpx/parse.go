@@ -11,7 +11,7 @@ import (
 )
 
 func ReadFile() model.Gpx {
-	gpxFile, error := os.Open("../example.gpx")
+	gpxFile, error := os.Open("../example003.gpx")
 	check(error)
 
 	fmt.Println("GPX file successfully opened")
@@ -87,12 +87,12 @@ func calculateDistance(lat1, lon1, lat2, lon2 float64) float64 {
 	earthRadiusKm := 6371.0
 
 	// convert coordinates to radians and calculate increments
-	lat1 = degToRad(lat1)
-	lat2 = degToRad(lat2)
-	dLat := degToRad(lat2 - lat1)
-	dLon := degToRad(lon2 - lon1)
+	rLat1 := degToRad(lat1)
+	rLat2 := degToRad(lat2)
+	rDiffLat := degToRad(lat2 - lat1)
+	rDiffLon := degToRad(lon2 - lon1)
 
-	a := math.Sin(dLat/2.0)*math.Sin(dLat/2.0) + math.Sin(dLon/2.0)*math.Sin(dLon/2.0)*math.Cos(lat1)*math.Cos(lat2)
+	a := math.Sin(rDiffLat/2.0)*math.Sin(rDiffLat/2.0) + math.Sin(rDiffLon/2.0)*math.Sin(rDiffLon/2.0)*math.Cos(rLat1)*math.Cos(rLat2)
 	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
 
 	return earthRadiusKm * c
