@@ -1,8 +1,13 @@
 package model
 
 type Route struct {
-	Name   string
-	Points []Point
+	Name     string
+	Distance float64
+	Ascent   float64
+	Descent  float64
+	MinElev  float64
+	MaxElev  float64
+	Points   []Point
 }
 
 type Point struct {

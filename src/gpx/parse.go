@@ -41,6 +41,12 @@ func ParseData(gpxData model.Gpx) model.Route {
 	// second pass calculates data between points
 	calculatePointsData(&routeData.Points)
 
+	routeData.MinElev = getMinElev(&routeData.Points)
+	routeData.MaxElev = getMaxElev(&routeData.Points)
+	routeData.Distance = routeData.Points[len(routeData.Points)-1].AccumulatedDistance
+	routeData.Ascent = routeData.Points[len(routeData.Points)-1].AccumulatedAscent
+	routeData.Descent = routeData.Points[len(routeData.Points)-1].AccumulatedDescent
+
 	return routeData
 }
 
@@ -104,6 +110,30 @@ func calculatePointsData(points *[]model.Point) {
 		(*points)[i] = currentPoint
 		(*points)[i-1] = prevPoint
 	}
+}
+
+func getMinElev(points *[]model.Point) float64 {
+	minElev := (*points)[0].Elevation
+
+	for _, p := range *points {
+		if p.Elevation < minElev {
+			minElev = p.Elevation
+		}
+	}
+
+	return minElev
+}
+
+func getMaxElev(points *[]model.Point) float64 {
+	maxElev := (*points)[0].Elevation
+
+	for _, p := range *points {
+		if p.Elevation > maxElev {
+			maxElev = p.Elevation
+		}
+	}
+
+	return maxElev
 }
 
 func calculateDistance(lat1, lon1, lat2, lon2 float64) float64 {
