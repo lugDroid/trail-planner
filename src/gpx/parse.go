@@ -14,7 +14,7 @@ func ReadFile() model.Gpx {
 	gpxFile, error := os.Open("../example003.gpx")
 	check(error)
 
-	fmt.Println("GPX file successfully opened")
+	//fmt.Println("GPX file successfully opened")
 	defer gpxFile.Close()
 
 	bytes, err := ioutil.ReadAll(gpxFile)
