@@ -29,44 +29,17 @@ func ReadFile() model.Gpx {
 func ParseData(gpxData model.Gpx) model.Route {
 	var routeData model.Route
 
-	routeData.Name = gpxData.Rte.Name
-
 	// first pass will add individual points data
 	if len(gpxData.Rte.Rtept) > 0 {
 		routeData.Points = extractPointData(gpxData.Rte.Rtept)
+		routeData.Name = gpxData.Rte.Name
 	} else {
 		routeData.Points = extractPointData(gpxData.Trk.Trkseg.Trkpt)
+		routeData.Name = gpxData.Trk.Name
 	}
 
 	// second pass calculates data between points
-	for i := 0; i < len(routeData.Points); i++ {
-		currentPoint := routeData.Points[i]
-
-		if i == 0 {
-			currentPoint.ElevationChange = 0
-			currentPoint.DistanceToPrev = 0
-			currentPoint.AccumulatedDistance = 0
-			continue
-		}
-
-		prevPoint := routeData.Points[i-1]
-
-		currentPoint.ElevationChange = currentPoint.Elevation - prevPoint.Elevation
-
-		flatDistance := calculateDistance(currentPoint.Coordinates.Lat, currentPoint.Coordinates.Lon, prevPoint.Coordinates.Lat, prevPoint.Coordinates.Lon)
-		currentPoint.DistanceToPrev = fix3dDistance(flatDistance, currentPoint.ElevationChange)
-		currentPoint.AccumulatedDistance = prevPoint.AccumulatedDistance + currentPoint.DistanceToPrev
-		if currentPoint.ElevationChange > 0 {
-			currentPoint.AccumulatedAscent = prevPoint.AccumulatedAscent + currentPoint.ElevationChange
-			currentPoint.AccumulatedDescent = prevPoint.AccumulatedDescent
-		} else {
-			currentPoint.AccumulatedAscent = prevPoint.AccumulatedAscent
-			currentPoint.AccumulatedDescent = prevPoint.AccumulatedDescent + currentPoint.ElevationChange
-		}
-
-		routeData.Points[i] = currentPoint
-		routeData.Points[i-1] = prevPoint
-	}
+	calculatePointsData(&routeData.Points)
 
 	return routeData
 }
@@ -100,6 +73,37 @@ func extractPointData(gpxPoints []model.GpxPoint) []model.Point {
 	}
 
 	return points
+}
+
+func calculatePointsData(points *[]model.Point) {
+	for i := 0; i < len(*points); i++ {
+		currentPoint := (*points)[i]
+
+		if i == 0 {
+			currentPoint.ElevationChange = 0
+			currentPoint.DistanceToPrev = 0
+			currentPoint.AccumulatedDistance = 0
+			continue
+		}
+
+		prevPoint := (*points)[i-1]
+
+		currentPoint.ElevationChange = currentPoint.Elevation - prevPoint.Elevation
+
+		flatDistance := calculateDistance(currentPoint.Coordinates.Lat, currentPoint.Coordinates.Lon, prevPoint.Coordinates.Lat, prevPoint.Coordinates.Lon)
+		currentPoint.DistanceToPrev = fix3dDistance(flatDistance, currentPoint.ElevationChange)
+		currentPoint.AccumulatedDistance = prevPoint.AccumulatedDistance + currentPoint.DistanceToPrev
+		if currentPoint.ElevationChange > 0 {
+			currentPoint.AccumulatedAscent = prevPoint.AccumulatedAscent + currentPoint.ElevationChange
+			currentPoint.AccumulatedDescent = prevPoint.AccumulatedDescent
+		} else {
+			currentPoint.AccumulatedAscent = prevPoint.AccumulatedAscent
+			currentPoint.AccumulatedDescent = prevPoint.AccumulatedDescent + currentPoint.ElevationChange
+		}
+
+		(*points)[i] = currentPoint
+		(*points)[i-1] = prevPoint
+	}
 }
 
 func calculateDistance(lat1, lon1, lat2, lon2 float64) float64 {
