@@ -18,10 +18,15 @@ func main() {
 	fmt.Printf("Max. Elevation: %.1fm\n", routeData.MaxElev)
 	fmt.Println()
 
-	/* 	for _, rp := range routeData.Points {
+	for _, rp := range routeData.Points {
 		fmt.Printf("Elevation: %7.2fm\t Change: %+6.2fm\t Acc.Ascent: %+6.2fm\t Acc.Descent: %+6.2fm\t Acc. Distance: %7.2fkm\t Distance to Prev.: %8.3fkm", rp.Elevation, rp.ElevationChange, rp.AccumulatedAscent, rp.AccumulatedDescent, rp.AccumulatedDistance, rp.DistanceToPrev)
 		fmt.Println()
-	} */
+	}
+	fmt.Println()
+
+	for i, c := range routeData.Climbs {
+		fmt.Printf("Climb #%v %+.2fm - %.2fkm > %.2fkm \n", i+1, (c.EndElev - c.StartElev), c.StartKm, c.EndKm)
+	}
 
 	// fmt.Println(calculateDistance(0, 0, 0, 0))
 	// fmt.Println(calculateDistance(51.5, 0, 38.8, -77.1))

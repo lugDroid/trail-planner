@@ -8,6 +8,7 @@ type Route struct {
 	MinElev  float64
 	MaxElev  float64
 	Points   []Point
+	Climbs   []Climb
 }
 
 type Point struct {
@@ -23,4 +24,11 @@ type Point struct {
 type Coord struct {
 	Lat float64
 	Lon float64
+}
+
+type Climb struct {
+	StartKm   float64
+	EndKm     float64
+	StartElev float64
+	EndElev   float64
 }

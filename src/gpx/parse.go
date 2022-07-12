@@ -47,6 +47,8 @@ func ParseData(gpxData model.Gpx) model.Route {
 	routeData.Ascent = routeData.Points[len(routeData.Points)-1].AccumulatedAscent
 	routeData.Descent = routeData.Points[len(routeData.Points)-1].AccumulatedDescent
 
+	routeData.Climbs = indentifyClimbs(&routeData.Points)
+
 	return routeData
 }
 
@@ -110,6 +112,41 @@ func calculatePointsData(points *[]model.Point) {
 		(*points)[i] = currentPoint
 		(*points)[i-1] = prevPoint
 	}
+}
+
+func indentifyClimbs(points *[]model.Point) []model.Climb {
+	var climbs []model.Climb
+
+	initialPoint := (*points)[0]
+
+	for i := 2; i < len(*points); i++ {
+		// a climb start/ends when there´s a change in the elevation change sign
+		if math.Signbit((*points)[i].ElevationChange) != math.Signbit((*points)[i-1].ElevationChange) {
+			endPoint := (*points)[i-1]
+
+			newClimb := model.Climb{
+				StartKm:   initialPoint.AccumulatedDistance,
+				EndKm:     endPoint.AccumulatedDistance,
+				StartElev: initialPoint.Elevation,
+				EndElev:   endPoint.Elevation,
+			}
+
+			initialPoint = endPoint
+
+			climbs = append(climbs, newClimb)
+		}
+	}
+
+	// add final climb
+	finalClimb := model.Climb{
+		StartKm:   initialPoint.AccumulatedDistance,
+		EndKm:     (*points)[len(*points)-1].AccumulatedDistance,
+		StartElev: initialPoint.Elevation,
+		EndElev:   (*points)[len(*points)-1].Elevation,
+	}
+	climbs = append(climbs, finalClimb)
+
+	return climbs
 }
 
 func getMinElev(points *[]model.Point) float64 {
