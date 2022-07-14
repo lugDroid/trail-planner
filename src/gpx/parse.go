@@ -3,21 +3,15 @@ package gpx
 import (
 	"encoding/xml"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"lugdroid/trailPlanner/webapp/src/model"
 	"math"
-	"os"
 	"strconv"
 )
 
-func ReadFile() model.Gpx {
-	gpxFile, error := os.Open("../example003.gpx")
-	check(error)
-
-	//fmt.Println("GPX file successfully opened")
-	defer gpxFile.Close()
-
-	bytes, err := ioutil.ReadAll(gpxFile)
+func ReadFile(file io.Reader) model.Gpx {
+	bytes, err := ioutil.ReadAll(file)
 	check(err)
 
 	var gpxData model.Gpx
