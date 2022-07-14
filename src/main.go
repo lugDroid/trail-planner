@@ -1,20 +1,26 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
-	"lugdroid/trailPlanner/webapp/src/gpx"
+	"lugdroid/trailPlanner/webapp/controller"
+	"net/http"
 )
 
 func main() {
-	gpxData := gpx.ReadFile()
-	routeData := gpx.ParseData(gpxData)
+	var routesController controller.Routes
 
-	json, err := json.Marshal(routeData)
-	if err != nil {
-		fmt.Println("Could not marshal into json object", err)
-	}
-	fmt.Println(string(json))
+	routesController.RegisterRoutes()
+
+	http.ListenAndServe(":3000", nil)
+
+	/* 	gpxData := gpx.ReadFile()
+	   	routeData := gpx.ParseData(gpxData)
+
+	   	json, err := json.Marshal(routeData)
+	   	if err != nil {
+	   		fmt.Println("Could not marshal into json object", err)
+	   	}
+	   	routeString := fmt.Sprintf("%#v", routeData)
+	   	fmt.Println(routeString) */
 
 	/* 	fmt.Println("Route name: ", routeData.Name)
 	   	fmt.Println("Number of GPS points: ", len(routeData.Points))
