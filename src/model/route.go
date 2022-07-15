@@ -13,6 +13,7 @@ type Route struct {
 }
 
 type Point struct {
+	Id                  int
 	DistanceToPrev      float64
 	AccumulatedDistance float64
 	Elevation           float64
@@ -28,6 +29,7 @@ type Coord struct {
 }
 
 type Climb struct {
+	Id        int
 	StartKm   float64
 	EndKm     float64
 	StartElev float64
