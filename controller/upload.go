@@ -24,15 +24,35 @@ func (u Upload) handleUpload(w http.ResponseWriter, r *http.Request) {
 
 	defer file.Close()
 	//name := strings.Split(header.Filename, ".")
-	fmt.Printf("File name %s\n", header.Filename)
+	fmt.Printf("Received file name %s\n", header.Filename)
 
-	gpxData := gpx.ReadFile(file)
+	gpxData, err := gpx.ReadFile(file)
+	if err != nil {
+		fmt.Println("Error reading file", err)
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		return
+	}
 	routeData := gpx.ParseData(gpxData)
 
-	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
+	resp := make(map[string]string)
 
-	jsonResp, err := json.Marshal(routeData)
+	routeJson, err := json.Marshal(routeData)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		resp["Status"] = "Status Internal Server Error"
+		resp["Message"] = "Failed to process route data from file"
+
+		return
+	}
+
+	fmt.Println(string(routeJson))
+
+	w.WriteHeader(http.StatusOK)
+	resp["Status"] = "Status OK"
+	resp["ReceivedFile"] = header.Filename
+
+	jsonResp, err := json.Marshal(resp)
 	if err != nil {
 		fmt.Println("Could not marshal response into json object", err)
 	}

@@ -22,7 +22,11 @@ func (r Routes) handleRoutes(w http.ResponseWriter, rq *http.Request) {
 	}
 	defer gpxFile.Close()
 
-	gpxData := gpx.ReadFile(gpxFile)
+	gpxData, err := gpx.ReadFile(gpxFile)
+	if err != nil {
+		fmt.Println("Error reading file", err)
+	}
+
 	routeData := gpx.ParseData(gpxData)
 
 	json, err := json.Marshal(routeData)

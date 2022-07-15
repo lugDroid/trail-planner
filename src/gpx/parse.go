@@ -2,6 +2,7 @@ package gpx
 
 import (
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -10,14 +11,19 @@ import (
 	"strconv"
 )
 
-func ReadFile(file io.Reader) model.Gpx {
+func ReadFile(file io.Reader) (model.Gpx, error) {
 	bytes, err := ioutil.ReadAll(file)
-	check(err)
+	if err != nil {
+		return model.Gpx{}, errors.New("could not read file")
+	}
 
 	var gpxData model.Gpx
-	xml.Unmarshal(bytes, &gpxData)
+	err = xml.Unmarshal(bytes, &gpxData)
+	if err != nil {
+		return model.Gpx{}, errors.New("could not unmarshal file content")
+	}
 
-	return gpxData
+	return gpxData, nil
 }
 
 func ParseData(gpxData model.Gpx) model.Route {
