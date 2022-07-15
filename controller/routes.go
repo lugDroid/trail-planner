@@ -4,11 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"lugdroid/trailPlanner/webapp/src/gpx"
+	"lugdroid/trailPlanner/webapp/src/model"
 	"net/http"
 	"os"
 )
 
 type Routes struct {
+	storage model.DbStorage
 }
 
 func (r Routes) RegisterRoutes() {

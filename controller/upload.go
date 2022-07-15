@@ -4,10 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"lugdroid/trailPlanner/webapp/src/gpx"
+	"lugdroid/trailPlanner/webapp/src/model"
 	"net/http"
 )
 
 type Upload struct {
+	storage model.DbStorage
 }
 
 func (u Upload) RegisterRoutes() {
@@ -37,16 +39,7 @@ func (u Upload) handleUpload(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	resp := make(map[string]string)
 
-	routeJson, err := json.Marshal(routeData)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		resp["Status"] = "Status Internal Server Error"
-		resp["Message"] = "Failed to process route data from file"
-
-		return
-	}
-
-	fmt.Println(string(routeJson))
+	u.storage.AddRoute(routeData)
 
 	w.WriteHeader(http.StatusOK)
 	resp["Status"] = "Status OK"

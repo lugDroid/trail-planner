@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 	"lugdroid/trailPlanner/webapp/controller"
+	"lugdroid/trailPlanner/webapp/src/model"
 	"net/http"
 	"os"
 
@@ -14,11 +15,9 @@ func main() {
 	db := connectToDatabase()
 	defer db.Close()
 
-	var routesController controller.Routes
-	var uploadController controller.Upload
+	dbStorage := model.NewDbStorage(db)
 
-	routesController.RegisterRoutes()
-	uploadController.RegisterRoutes()
+	controller.StartUp(&dbStorage)
 
 	http.ListenAndServe(":3000", nil)
 }

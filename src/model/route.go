@@ -1,6 +1,7 @@
 package model
 
 type Route struct {
+	Id       int
 	Name     string
 	Distance float64
 	Ascent   float64
