@@ -138,3 +138,22 @@ func (s *DbStorage) getRouteClimbs(nr *Route) {
 
 	nr.Climbs = climbs
 }
+
+func (s *DbStorage) GetRouteById(routeId int) Route {
+	r := Route{}
+
+	row := s.db.QueryRow(`
+		SELECT id, name, ascent, descent, min_elev, max_elev
+		FROM route
+		WHERE id = $1
+	`, routeId)
+	err := row.Scan(&r.Id, &r.Name, &r.Ascent, &r.Descent, &r.MinElev, &r.MaxElev)
+	if err != nil {
+		fmt.Println("GetRouteById query failed", err)
+	}
+
+	s.getRoutePoints(&r)
+	s.getRouteClimbs(&r)
+
+	return r
+}
