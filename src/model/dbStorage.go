@@ -59,3 +59,82 @@ func (s *DbStorage) addRouteClimbs(nr *Route) {
 	}
 	// TO-DO return error code
 }
+
+func (s *DbStorage) GetAllRoutes() []Route {
+	rows, err := s.db.Query(`
+		SELECT id, name, ascent, descent, min_elev, max_elev
+		FROM route
+	`)
+	if err != nil {
+		fmt.Println("GetAllRoutes query failed", err)
+	}
+	defer rows.Close()
+
+	var routes []Route
+	for rows.Next() {
+		r := Route{}
+		err := rows.Scan(&r.Id, &r.Name, &r.Ascent, &r.Descent, &r.MinElev, &r.MaxElev)
+		if err != nil {
+			fmt.Println("Error scanning GetAllRoutes query results", err)
+		}
+
+		routes = append(routes, r)
+	}
+
+	for i := range routes {
+		s.getRoutePoints(&routes[i])
+		s.getRouteClimbs(&routes[i])
+	}
+
+	return routes
+}
+
+func (s *DbStorage) getRoutePoints(nr *Route) {
+	rows, err := s.db.Query(`
+		SELECT id, distance_to_prev, acc_distance, elevation, elevation_change, acc_ascent, acc_descent, lat, lon
+		FROM point
+		WHERE route_id = $1
+	`, nr.Id)
+	if err != nil {
+		fmt.Println("GetRoutePoints query failed", err)
+	}
+	defer rows.Close()
+
+	var points []Point
+	for rows.Next() {
+		p := Point{}
+		err := rows.Scan(&p.Id, &p.DistanceToPrev, &p.AccumulatedDistance, &p.Elevation, &p.ElevationChange, &p.AccumulatedAscent, &p.AccumulatedDescent, &p.Coordinates.Lat, &p.Coordinates.Lon)
+		if err != nil {
+			fmt.Println("Error scanning GetAllPoints query results", err)
+		}
+
+		points = append(points, p)
+	}
+
+	nr.Points = points
+}
+
+func (s *DbStorage) getRouteClimbs(nr *Route) {
+	rows, err := s.db.Query(`
+		SELECT id, start_km, end_km, start_elev, end_elev
+		FROM climb
+		WHERE route_id = $1
+	`, nr.Id)
+	if err != nil {
+		fmt.Println("GetRouteClimbs query failed", err)
+	}
+	defer rows.Close()
+
+	var climbs []Climb
+	for rows.Next() {
+		c := Climb{}
+		err := rows.Scan(&c.Id, &c.StartKm, &c.EndKm, &c.StartElev, &c.EndElev)
+		if err != nil {
+			fmt.Println("Error scanning GetAllPoints query results", err)
+		}
+
+		climbs = append(climbs, c)
+	}
+
+	nr.Climbs = climbs
+}
