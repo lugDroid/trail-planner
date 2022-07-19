@@ -17,12 +17,13 @@ func NewDbStorage(database *sql.DB) DbStorage {
 
 func (s *DbStorage) AddRoute(nr Route) Route {
 	err := s.db.QueryRow(`
-		INSERT INTO route (name, ascent, descent, min_elev ,max_elev)
-		VALUES ($1, $2, $3, $4, $5)
+		INSERT INTO route (name, ascent, descent, min_elev ,max_elev, distance)
+		VALUES ($1, $2, $3, $4, $5, $6)
 		RETURNING id
-	`, nr.Name, nr.Ascent, nr.Descent, nr.MinElev, nr.MaxElev).Scan(&nr.Id)
+	`, nr.Name, nr.Ascent, nr.Descent, nr.MinElev, nr.MaxElev, nr.Distance).Scan(&nr.Id)
 	if err != nil {
 		fmt.Println("AddRoute query failed - ", err)
+		return Route{}
 	}
 
 	s.addRoutePoints(&nr)
@@ -62,7 +63,7 @@ func (s *DbStorage) addRouteClimbs(nr *Route) {
 
 func (s *DbStorage) GetAllRoutes() []Route {
 	rows, err := s.db.Query(`
-		SELECT id, name, ascent, descent, min_elev, max_elev
+		SELECT id, name, ascent, descent, min_elev, max_elev, distance
 		FROM route
 	`)
 	if err != nil {
@@ -73,7 +74,7 @@ func (s *DbStorage) GetAllRoutes() []Route {
 	var routes []Route
 	for rows.Next() {
 		r := Route{}
-		err := rows.Scan(&r.Id, &r.Name, &r.Ascent, &r.Descent, &r.MinElev, &r.MaxElev)
+		err := rows.Scan(&r.Id, &r.Name, &r.Ascent, &r.Descent, &r.MinElev, &r.MaxElev, &r.Distance)
 		if err != nil {
 			fmt.Println("Error scanning GetAllRoutes query results", err)
 		}
@@ -143,11 +144,11 @@ func (s *DbStorage) GetRouteById(routeId int) Route {
 	r := Route{}
 
 	row := s.db.QueryRow(`
-		SELECT id, name, ascent, descent, min_elev, max_elev
+		SELECT id, name, ascent, descent, min_elev, max_elev, distance
 		FROM route
 		WHERE id = $1
 	`, routeId)
-	err := row.Scan(&r.Id, &r.Name, &r.Ascent, &r.Descent, &r.MinElev, &r.MaxElev)
+	err := row.Scan(&r.Id, &r.Name, &r.Ascent, &r.Descent, &r.MinElev, &r.MaxElev, &r.Distance)
 	if err != nil {
 		fmt.Println("GetRouteById query failed", err)
 	}
@@ -156,4 +157,14 @@ func (s *DbStorage) GetRouteById(routeId int) Route {
 	s.getRouteClimbs(&r)
 
 	return r
+}
+
+func (s *DbStorage) DeleteRoute(routeId int) {
+	_, err := s.db.Exec(`
+		DELETE FROM route
+		WHERE id = $1
+	`, routeId)
+	if err != nil {
+		fmt.Println("DeleteRoute query failed")
+	}
 }
