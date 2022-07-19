@@ -15,7 +15,7 @@ func NewDbStorage(database *sql.DB) DbStorage {
 	}
 }
 
-func (s *DbStorage) AddRoute(nr Route) Route {
+func (s *DbStorage) AddRoute(nr Route) (Route, error) {
 	err := s.db.QueryRow(`
 		INSERT INTO route (name, ascent, descent, min_elev ,max_elev, distance)
 		VALUES ($1, $2, $3, $4, $5, $6)
@@ -23,14 +23,13 @@ func (s *DbStorage) AddRoute(nr Route) Route {
 	`, nr.Name, nr.Ascent, nr.Descent, nr.MinElev, nr.MaxElev, nr.Distance).Scan(&nr.Id)
 	if err != nil {
 		fmt.Println("AddRoute query failed - ", err)
-		return Route{}
+		return Route{}, err
 	}
 
 	s.addRoutePoints(&nr)
 	s.addRouteClimbs(&nr)
 
-	return nr
-	// TO-DO return error codes so handlefunc is able to sent proper response status
+	return nr, nil
 }
 
 func (s *DbStorage) addRoutePoints(nr *Route) {
@@ -61,13 +60,14 @@ func (s *DbStorage) addRouteClimbs(nr *Route) {
 	// TO-DO return error code
 }
 
-func (s *DbStorage) GetAllRoutes() []Route {
+func (s *DbStorage) GetAllRoutes() ([]Route, error) {
 	rows, err := s.db.Query(`
 		SELECT id, name, ascent, descent, min_elev, max_elev, distance
 		FROM route
 	`)
 	if err != nil {
 		fmt.Println("GetAllRoutes query failed", err)
+		return []Route{}, err
 	}
 	defer rows.Close()
 
@@ -77,6 +77,7 @@ func (s *DbStorage) GetAllRoutes() []Route {
 		err := rows.Scan(&r.Id, &r.Name, &r.Ascent, &r.Descent, &r.MinElev, &r.MaxElev, &r.Distance)
 		if err != nil {
 			fmt.Println("Error scanning GetAllRoutes query results", err)
+			return []Route{}, err
 		}
 
 		routes = append(routes, r)
@@ -87,7 +88,7 @@ func (s *DbStorage) GetAllRoutes() []Route {
 		s.getRouteClimbs(&routes[i])
 	}
 
-	return routes
+	return routes, nil
 }
 
 func (s *DbStorage) getRoutePoints(nr *Route) {
@@ -140,7 +141,7 @@ func (s *DbStorage) getRouteClimbs(nr *Route) {
 	nr.Climbs = climbs
 }
 
-func (s *DbStorage) GetRouteById(routeId int) Route {
+func (s *DbStorage) GetRouteById(routeId int) (Route, error) {
 	r := Route{}
 
 	row := s.db.QueryRow(`
@@ -151,24 +152,29 @@ func (s *DbStorage) GetRouteById(routeId int) Route {
 	err := row.Scan(&r.Id, &r.Name, &r.Ascent, &r.Descent, &r.MinElev, &r.MaxElev, &r.Distance)
 	if err != nil {
 		fmt.Println("GetRouteById query failed", err)
+		return Route{}, err
 	}
 
 	s.getRoutePoints(&r)
 	s.getRouteClimbs(&r)
 
-	return r
+	return r, nil
 }
 
-func (s *DbStorage) DeleteRoute(routeId int) Route {
-	route := s.GetRouteById(routeId)
+func (s *DbStorage) DeleteRoute(routeId int) (Route, error) {
+	route, err := s.GetRouteById(routeId)
+	if err != nil {
+		return Route{}, err
+	}
 
-	_, err := s.db.Exec(`
+	_, err = s.db.Exec(`
 		DELETE FROM route
 		WHERE id = $1
 	`, routeId)
 	if err != nil {
 		fmt.Println("DeleteRoute query failed")
+		return Route{}, err
 	}
 
-	return route
+	return route, nil
 }

@@ -38,51 +38,59 @@ func (r Routes) handleRoutes(w http.ResponseWriter, rq *http.Request) {
 		case http.MethodPut:
 			// TO-DO: Modify route to be implemented when needed
 		}
+	} else {
+		switch rq.Method {
+		case http.MethodGet:
+			r.handleList(w, rq)
+		case http.MethodPost:
+			r.handleUpload(w, rq)
+		}
 	}
-
-	switch rq.Method {
-	case http.MethodGet:
-		r.handleList(w, rq)
-	case http.MethodPost:
-		r.handleUpload(w, rq)
-	}
-
 }
 
 func (r Routes) handleDetail(w http.ResponseWriter, rq *http.Request, routeId int) {
-	route := r.storage.GetRouteById(routeId)
+	route, err := r.storage.GetRouteById(routeId)
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
 	json, err := json.Marshal(route)
 	if err != nil {
 		fmt.Println("Could not marshal into json object", err)
 	}
 
-	// TO-DO: return status code
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(json)
 }
 
 func (r Routes) handleDelete(w http.ResponseWriter, rq *http.Request, routeId int) {
-	route := r.storage.DeleteRoute(routeId)
+	route, err := r.storage.DeleteRoute(routeId)
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
 
 	json, err := json.Marshal(route)
 	if err != nil {
 		fmt.Println("Could not marshal into json object", err)
 	}
 
-	// TO-DO: return status code
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(json)
 }
 
 func (r Routes) handleList(w http.ResponseWriter, rq *http.Request) {
-	routeData := r.storage.GetAllRoutes()
+	routeData, err := r.storage.GetAllRoutes()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 	json, err := json.Marshal(routeData)
 	if err != nil {
 		fmt.Println("Could not marshal into json object", err)
 	}
 
-	// TO-DO: return status code
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(json)
 }
@@ -105,22 +113,18 @@ func (r Routes) handleUpload(w http.ResponseWriter, rq *http.Request) {
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		return
 	}
+
 	routeData := gpx.ParseData(gpxData)
+	route, err := r.storage.AddRoute(routeData)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
 
-	w.Header().Set("Content-Type", "application/json")
-	resp := make(map[string]string)
-
-	r.storage.AddRoute(routeData)
-
-	w.WriteHeader(http.StatusOK)
-	resp["Status"] = "Status OK"
-	resp["ReceivedFile"] = header.Filename
-	// TO-DO: Return json of uploaded route
-
-	jsonResp, err := json.Marshal(resp)
+	json, err := json.Marshal(route)
 	if err != nil {
 		fmt.Println("Could not marshal response into json object", err)
 	}
 
-	w.Write(jsonResp)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(json)
 }
