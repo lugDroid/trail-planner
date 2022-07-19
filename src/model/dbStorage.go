@@ -159,7 +159,9 @@ func (s *DbStorage) GetRouteById(routeId int) Route {
 	return r
 }
 
-func (s *DbStorage) DeleteRoute(routeId int) {
+func (s *DbStorage) DeleteRoute(routeId int) Route {
+	route := s.GetRouteById(routeId)
+
 	_, err := s.db.Exec(`
 		DELETE FROM route
 		WHERE id = $1
@@ -167,4 +169,6 @@ func (s *DbStorage) DeleteRoute(routeId int) {
 	if err != nil {
 		fmt.Println("DeleteRoute query failed")
 	}
+
+	return route
 }

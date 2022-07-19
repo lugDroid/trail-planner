@@ -16,8 +16,8 @@ func main() {
 	defer db.Close()
 
 	dbStorage := model.NewDbStorage(db)
-
-	controller.StartUp(&dbStorage)
+	var routesController controller.Routes
+	routesController.StartUp(&dbStorage)
 
 	http.ListenAndServe(":3000", nil)
 }
